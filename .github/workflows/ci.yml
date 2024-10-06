@@ -1,0 +1,50 @@
+name: CI
+on: [ push, pull_request ]
+
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+    timeout-minutes: 45
+    steps:
+      -
+        uses: actions/checkout@v4
+      -
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: clippy, rustfmt
+      -
+        uses: taiki-e/install-action@nextest
+      -
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/Iron # 20
+      -
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.45.x
+      -
+        run: ./install.sh
+      -
+        uses: Swatinem/rust-cache@v2.7.3
+      -
+        run: lefthook run --force pre-commit
+      -
+        run: cargo hack test --feature-powerset
+      -
+        name: Validate PR commits with commitlint
+        if: github.event_name == 'pull_request'
+        run: commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
