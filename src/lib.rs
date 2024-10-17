@@ -12,3 +12,7 @@ mod tests {
         assert_eq!(result, 4);
     }
 }
+mod types;
+pub use types::*;
+mod functions;
+pub use functions::*;
