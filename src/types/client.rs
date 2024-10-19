@@ -17,10 +17,9 @@ impl RestClient {
         url
     }
 
-    pub async fn get_markets(&self, next_cursor: &NextCursorRef) -> reqwest::Result<Vec<Orderbook>> {
+    pub async fn get_markets(&self, next_cursor: &NextCursorRef) -> reqwest::Result<Payload<Orderbook>> {
         let url = self.url("/markets");
-        let payload = self.get_payload::<Orderbook>(url, next_cursor).await?;
-        Ok(payload.data)
+        self.get_payload::<Orderbook>(url, next_cursor).await
     }
 
     async fn get_payload<T: DeserializeOwned>(&self, mut url: Url, next_cursor: &NextCursorRef) -> reqwest::Result<Payload<T>> {
