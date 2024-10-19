@@ -1,4 +1,4 @@
-use crate::{Orderbook, Payload, REST_BASE_URL};
+use crate::{NextCursorRef, Orderbook, Payload, REST_BASE_URL};
 use derive_getters::Getters;
 use derive_more::{From, Into};
 use derive_new::new;
@@ -17,13 +17,16 @@ impl RestClient {
         url
     }
 
-    pub async fn get_markets(&self) -> reqwest::Result<Vec<Orderbook>> {
-        let payload = self.get_payload::<Orderbook>("/markets").await?;
+    pub async fn get_markets(&self, next_cursor: &NextCursorRef) -> reqwest::Result<Vec<Orderbook>> {
+        let url = self.url("/markets");
+        let payload = self.get_payload::<Orderbook>(url, next_cursor).await?;
         Ok(payload.data)
     }
 
-    async fn get_payload<T: DeserializeOwned>(&self, path: &str) -> reqwest::Result<Payload<T>> {
-        let response = reqwest::get(self.url(path)).await?;
+    async fn get_payload<T: DeserializeOwned>(&self, mut url: Url, next_cursor: &NextCursorRef) -> reqwest::Result<Payload<T>> {
+        url.query_pairs_mut()
+            .append_pair("next_cursor", next_cursor);
+        let response = reqwest::get(url).await?;
         let data = response.json().await?;
         Ok(data)
     }
