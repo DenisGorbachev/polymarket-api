@@ -1,4 +1,4 @@
-use crate::{Market, Payload};
+use crate::{Orderbook, Payload};
 use derive_getters::Getters;
 use derive_more::{From, Into};
 use derive_new::new;
@@ -17,8 +17,8 @@ impl Client {
         url
     }
 
-    pub async fn get_markets(&self) -> reqwest::Result<Vec<Market>> {
-        let payload = self.get_payload::<Market>("/markets").await?;
+    pub async fn get_markets(&self) -> reqwest::Result<Vec<Orderbook>> {
+        let payload = self.get_payload::<Orderbook>("/markets").await?;
         Ok(payload.data)
     }
 

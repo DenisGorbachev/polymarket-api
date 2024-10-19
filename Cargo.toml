@@ -17,14 +17,26 @@ summary = ""
 announcement = ""
 
 [dependencies]
-alloy = { version = "0.4.2", default-features = false, features = ["std", "serde"] }
+alloy = { version = "0.5.0", default-features = false, features = ["std", "serde"] }
 async-stream = { version = "0.3.6" }
 derive-getters = { version = "0.5.0", features = ["auto_copy_getters"] }
 derive-new = "0.7.0"
 derive_more = { version = "1.0.0", features = ["full"] }
+fmt-derive = { version = "0.1.2" }
 futures = { version = "0.3.30" }
+indexmap = { version = "2.6.0" }
 reqwest = { version = "0.12.8", features = ["json"] }
 rust_decimal = { version = "1.36.0", features = ["serde"] }
+rustc-hash = { version = "2.0.0" }
 serde = { version = "1.0.204", features = ["derive"] }
-time = { version = "0.3.36", features = ["serde", "macros"] }
+#standard-traits = { git = "https://github.com/DenisGorbachev/standard-traits" }
+stub-macro = "0.1.6"
+subtype = { git = "https://github.com/DenisGorbachev/subtype" }
+time = { version = "0.3.36", features = ["serde", "macros", "formatting", "parsing"] }
 url = { version = "2.5.2", features = ["serde"] }
+
+[dev-dependencies]
+serde_json = "1.0.129"
+
+[package.metadata.cargo-machete]
+ignored = ["stub_macro"]

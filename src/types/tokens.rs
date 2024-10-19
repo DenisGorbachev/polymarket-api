@@ -1,9 +1,12 @@
 use crate::Token;
-use derive_more::{From, Into};
+use derive_more::{Error, From, Into};
 use derive_new::new;
+use fmt_derive::Display;
 use serde::{Deserialize, Serialize};
 
-/// See [`Tokens::winner`]
+/// IMPORTANT: Do not assume that `self.left.outcome == "Yes"` or `self.right.outcome == "No"`
+/// Some values of this struct may be regarded as invalid (for example: `self.left.winner == true && self.right.winner == true`). However, it's better to handle such values in the strategy code instead of deserialization code, because they require special actions
+/// See also: [`Tokens::winner`]
 #[derive(new, From, Into, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Default, Hash, Clone, Debug)]
 pub struct Tokens {
     pub left: Token,
@@ -21,3 +24,6 @@ impl Tokens {
         }
     }
 }
+
+#[derive(Error, Display, From, Eq, PartialEq, Hash, Clone, Copy, Debug)]
+pub enum TokensValidationError {}
