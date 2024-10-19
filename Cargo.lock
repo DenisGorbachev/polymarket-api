@@ -1707,6 +1707,7 @@ dependencies = [
  "subtype",
  "time",
  "url",
+ "url-macro",
 ]
 
 [[package]]
@@ -2782,6 +2783,15 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+]
+
+[[package]]
+name = "url-macro"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7d7a8112fc4865a66ddc8a7cbf3a26eccbfdaebbfbeb13d9d732315d54e8968"
+dependencies = [
+ "url",
 ]
 
 [[package]]

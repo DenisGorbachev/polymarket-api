@@ -34,6 +34,7 @@ stub-macro = "0.1.6"
 subtype = { git = "https://github.com/DenisGorbachev/subtype" }
 time = { version = "0.3.36", features = ["serde", "macros", "formatting", "parsing"] }
 url = { version = "2.5.2", features = ["serde"] }
+url-macro = { version = "0.1.9" }
 
 [dev-dependencies]
 serde_json = "1.0.129"
