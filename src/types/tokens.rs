@@ -1,4 +1,4 @@
-use crate::Token;
+use crate::{Token, TokenId};
 use derive_more::{Error, From, Into};
 use derive_new::new;
 use fmt_derive::Display;
@@ -22,6 +22,14 @@ impl Tokens {
             (true, false) => Some(Some(&self.left)),
             (false, true) => Some(Some(&self.right)),
         }
+    }
+
+    pub fn token_ids_tuple(&self) -> (TokenId, TokenId) {
+        (self.left.token_id, self.right.token_id)
+    }
+
+    pub fn token_ids_vec(&self) -> Vec<TokenId> {
+        vec![self.left.token_id, self.right.token_id]
     }
 }
 

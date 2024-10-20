@@ -1,5 +1,4 @@
-use crate::types::next_cursor::FINAL_NEXT_CURSOR;
-use crate::{NextCursor, Payload};
+use crate::{NextCursor, Payload, NEXT_CURSOR_STOP};
 use futures::Stream;
 use serde::de::DeserializeOwned;
 use std::future::Future;
@@ -68,6 +67,6 @@ where
 
 impl<T> PayloadIterator<T> {
     pub fn is_final(&self) -> bool {
-        self.next_cursor == FINAL_NEXT_CURSOR
+        self.next_cursor == NEXT_CURSOR_STOP
     }
 }

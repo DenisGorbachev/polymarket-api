@@ -1,16 +1,23 @@
-use alloy::primitives::Address;
+use std::fmt::Display;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
-pub fn deserialize_address_or_empty_string<'de, D>(deserializer: D) -> Result<Option<Address>, D::Error>
+pub struct DeserializeOrNone<T>(PhantomData<T>);
+
+impl<T> DeserializeOrNone<T>
 where
-    D: serde::Deserializer<'de>,
+    T: FromStr,
+    <T as FromStr>::Err: Display,
 {
-    let s: String = serde::Deserialize::deserialize(deserializer)?;
-    if s.is_empty() {
-        Ok(None)
-    } else {
-        Address::from_str(&s)
-            .map(Some)
-            .map_err(serde::de::Error::custom)
+    pub fn run<'de, D>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = serde::Deserialize::deserialize(deserializer)?;
+        if s.is_empty() {
+            Ok(None)
+        } else {
+            T::from_str(&s).map(Some).map_err(serde::de::Error::custom)
+        }
     }
 }

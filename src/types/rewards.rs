@@ -1,4 +1,4 @@
-use crate::{Amount, RewardsRate};
+use crate::{Amount, RewardsRate, RewardsRaw};
 use derive_more::{From, Into};
 use derive_new::new;
 use serde::{Deserialize, Serialize};
@@ -12,3 +12,21 @@ pub struct Rewards {
 }
 
 impl Rewards {}
+
+impl TryFrom<RewardsRaw> for Rewards {
+    type Error = ();
+
+    fn try_from(value: RewardsRaw) -> Result<Self, Self::Error> {
+        let RewardsRaw {
+            rates,
+            min_size,
+            max_spread,
+        } = value;
+        let rates = rates.unwrap_or_default();
+        Ok(Self {
+            rates,
+            min_size,
+            max_spread,
+        })
+    }
+}
