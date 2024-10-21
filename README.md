@@ -13,10 +13,8 @@
 ## Installation
 
 ```shell
-cargo add polymarket-api url
+cargo add polymarket-api
 ```
-
-**Important:** add the `url` crate too.
 
 ## Gratitude
 

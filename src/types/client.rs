@@ -1,11 +1,12 @@
-use crate::{get_page_stream, Market, MarketRaw, NextCursor, Orderbook, Payload, TokenId, NEXT_CURSOR_START, REST_BASE_URL};
+use crate::{get_page_stream, BookParams, Market, MarketRaw, NextCursor, Orderbook, Payload, TokenId, NEXT_CURSOR_START, REST_BASE_URL};
 use derive_getters::Getters;
 use derive_more::{From, Into};
 use derive_new::new;
 use futures::Stream;
+use reqwest::Response;
 use serde::de::DeserializeOwned;
-use std::fs::File;
-use std::io::Write;
+use serde::Serialize;
+use std::fmt::Debug;
 use url::Url;
 
 #[derive(new, Getters, From, Into, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
@@ -21,9 +22,7 @@ impl RestClient {
     }
 
     pub async fn get_markets(&self, next_cursor: NextCursor) -> reqwest::Result<Payload<Market>> {
-        let result = self
-            .get_payload::<MarketRaw>(self.url("/markets"), next_cursor)
-            .await;
+        let result = Self::get_payload::<MarketRaw>(self.url("/markets"), next_cursor).await;
         result.map(|payload| {
             let Payload {
                 limit,
@@ -45,18 +44,14 @@ impl RestClient {
         })
     }
 
-    /// Retrieves the orderbooks for the specified token IDs.
-    ///
-    /// # Arguments
-    /// * `token_ids` - An iterator of token IDs to retrieve orderbooks for.
-    ///
-    /// # Returns
-    /// A `reqwest::Result<Vec<Orderbook>>` containing the orderbooks for the specified token IDs.
-    pub async fn get_orderbooks(&self, _token_ids: impl IntoIterator<Item = &TokenId>) -> reqwest::Result<Vec<Orderbook>> {
-        todo!()
-        // let result = self
-        //     .get_payload::<MarketRaw>(self.url("/markets"), next_cursor)
-        //     .await;
+    pub async fn get_orderbooks(&self, token_ids: impl IntoIterator<Item = &TokenId>) -> reqwest::Result<Vec<Orderbook>> {
+        let url = self.url("/books");
+        let params = token_ids
+            .into_iter()
+            .map(|token_id| BookParams::from(*token_id))
+            .collect::<Vec<BookParams>>();
+        dbg!(serde_json::to_string(&params).unwrap());
+        Self::post_json(url, &params).await
     }
 
     pub fn get_markets_stream(&self) -> impl Stream<Item = Result<Vec<Market>, reqwest::Error>> + '_ {
@@ -67,22 +62,41 @@ impl RestClient {
         get_page_stream(|next_cursor| self.get_markets(next_cursor), next_cursor)
     }
 
-    async fn get_payload<T: DeserializeOwned>(&self, mut url: Url, next_cursor: NextCursor) -> reqwest::Result<Payload<T>> {
+    // TODO: "If you plan to perform multiple requests, it is best to create a Client and reuse it, taking advantage of keep-alive connection pooling."
+    async fn get_payload<T: DeserializeOwned>(mut url: Url, next_cursor: NextCursor) -> reqwest::Result<Payload<T>> {
         url.query_pairs_mut()
             .append_pair("next_cursor", &next_cursor);
         let response = reqwest::get(url).await?;
+        Self::parse_response(response).await
+    }
+
+    #[cfg(not(feature = "debug"))]
+    async fn parse_response<T: DeserializeOwned>(response: Response) -> reqwest::Result<T> {
+        response.json().await
+    }
+
+    #[cfg(feature = "debug")]
+    async fn parse_response<T: DeserializeOwned>(response: Response) -> reqwest::Result<T> {
+        use std::fs::File;
+        use std::io::Write;
         let full = response.text().await?;
         File::options()
             .create(true)
             .truncate(true)
             .write(true)
-            .open("/tmp/payload.json")
+            .open("/tmp/response.json")
             .unwrap()
             .write_all(full.as_bytes())
             .unwrap();
         let data = serde_json::from_slice(full.as_bytes()).unwrap();
-        // let data = response.json().await?;
         Ok(data)
+    }
+
+    async fn post_json<Params: Serialize + ?Sized, T: DeserializeOwned>(url: Url, params: &Params) -> reqwest::Result<T> {
+        let client = reqwest::Client::new();
+        let request = client.post(url).json(params).build()?;
+        let response = client.execute(request).await?;
+        Self::parse_response(response).await
     }
 }
 

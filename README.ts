@@ -73,10 +73,8 @@ ${doc.stdout}
 ## Installation
 
 \`\`\`shell
-cargo add ${name} url
+cargo add ${name}
 \`\`\`
-
-**Important:** add the \`url\` crate too.
 
 ## Gratitude
 
