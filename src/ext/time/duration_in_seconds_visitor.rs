@@ -5,11 +5,18 @@ use time::Duration;
 
 pub struct DurationInSecondsVisitor;
 
-impl<'de> Visitor<'de> for DurationInSecondsVisitor {
+impl Visitor<'_> for DurationInSecondsVisitor {
     type Value = Duration;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("an integer representing the number of seconds")
+    }
+
+    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        Ok(Duration::seconds(v))
     }
 
     fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
@@ -17,13 +24,6 @@ impl<'de> Visitor<'de> for DurationInSecondsVisitor {
         E: Error,
     {
         let v = i64::try_from(v).map_err(|e| E::custom(format!("Failed to parse u64 as i64: {}", e)))?;
-        Ok(Duration::seconds(v))
-    }
-
-    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
-    where
-        E: Error,
-    {
         Ok(Duration::seconds(v))
     }
 }

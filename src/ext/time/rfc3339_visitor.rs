@@ -6,7 +6,7 @@ use time::OffsetDateTime;
 
 pub struct Rfc3339Visitor;
 
-impl<'de> Visitor<'de> for Rfc3339Visitor {
+impl Visitor<'_> for Rfc3339Visitor {
     type Value = OffsetDateTime;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

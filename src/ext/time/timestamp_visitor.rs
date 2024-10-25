@@ -5,7 +5,7 @@ use time::OffsetDateTime;
 
 pub struct TimestampVisitor;
 
-impl<'de> Visitor<'de> for TimestampVisitor {
+impl Visitor<'_> for TimestampVisitor {
     type Value = OffsetDateTime;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
