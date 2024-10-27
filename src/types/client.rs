@@ -50,7 +50,6 @@ impl RestClient {
             .into_iter()
             .map(|token_id| BookParams::from(*token_id))
             .collect::<Vec<BookParams>>();
-        dbg!(serde_json::to_string(&params).unwrap());
         Self::post_json(url, &params).await
     }
 

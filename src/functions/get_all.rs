@@ -11,7 +11,6 @@ pub fn get_page_stream<T: Debug, E, F: Future<Output = Result<Payload<T>, E>>>(m
             match result {
                 Ok(payload) => {
                     next_cursor = payload.next_cursor;
-                    dbg!(&next_cursor);
                     yield Ok(payload.data);
                 }
                 Err(e) => {
