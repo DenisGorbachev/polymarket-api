@@ -35,7 +35,13 @@ pub struct Market {
     pub tags: Vec<String>,
 }
 
-impl Market {}
+impl Market {
+    // TODO: Get the explanation for each field
+    // TODO: Double-check this definition with Polymarket devs (it may be too restrictive)
+    pub fn tradeable(&self) -> bool {
+        self.active && !self.closed && !self.archived && self.accepting_orders && self.enable_order_book
+    }
+}
 
 impl TryFrom<MarketRaw> for Market {
     type Error = ();
