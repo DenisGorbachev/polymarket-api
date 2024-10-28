@@ -1,8 +1,8 @@
-use crate::{Amount, ConditionId, MarketRaw, QuestionId, Rewards, StringRfc3339, Tokens};
+use crate::{Amount, ConditionId, MarketRaw, QuestionId, Rewards, TokenId, Tokens};
 use alloy::primitives::Address;
 use derive_more::{From, Into};
 use serde::{Deserialize, Serialize};
-use time::Duration;
+use time::{Duration, OffsetDateTime};
 
 /// NOTE: [`MarketRaw`] contains more fields (e.g. `neg_risk*`, `accepting_order_timestamp`)
 #[derive(From, Into, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
@@ -20,10 +20,11 @@ pub struct Market {
     pub archived: bool,
     pub enable_order_book: bool,
     pub accepting_orders: bool,
+    pub accepting_order_timestamp: Option<OffsetDateTime>,
     pub minimum_order_size: Amount,
     pub minimum_tick_size: Amount,
-    pub end_date_iso: Option<StringRfc3339>,
-    pub game_start_time: Option<StringRfc3339>,
+    pub end_date_iso: Option<OffsetDateTime>,
+    pub game_start_time: Option<OffsetDateTime>,
     pub seconds_delay: Duration,
     pub fpmm: Option<Address>,
     pub maker_base_fee: Amount,
@@ -40,6 +41,14 @@ impl Market {
     // TODO: Double-check this definition with Polymarket devs (it may be too restrictive)
     pub fn tradeable(&self) -> bool {
         self.active && !self.closed && !self.archived && self.accepting_orders && self.enable_order_book
+    }
+
+    pub fn token_ids_tuple(&self) -> (TokenId, TokenId) {
+        self.tokens.token_ids_tuple()
+    }
+
+    pub fn token_ids_vec(&self) -> Vec<TokenId> {
+        self.tokens.token_ids_vec()
     }
 }
 
@@ -60,7 +69,7 @@ impl TryFrom<MarketRaw> for Market {
             archived,
             enable_order_book,
             accepting_orders,
-            accepting_order_timestamp: _,
+            accepting_order_timestamp,
             minimum_order_size,
             minimum_tick_size,
             end_date_iso,
@@ -95,6 +104,7 @@ impl TryFrom<MarketRaw> for Market {
             archived,
             enable_order_book,
             accepting_orders,
+            accepting_order_timestamp,
             minimum_order_size,
             minimum_tick_size,
             end_date_iso,

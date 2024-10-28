@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(From, Into, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct OrderSummary {
-    pub price: Amount,
+    pub price: Price,
     pub size: Amount,
 }
 

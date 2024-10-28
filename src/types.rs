@@ -72,14 +72,16 @@ pub use bid_ask_cross_error::*;
 
 mod market_raw;
 mod rewards_raw;
-mod string_rfc3339;
 
 pub use market_raw::*;
 pub use rewards_raw::*;
-pub use string_rfc3339::*;
 mod side;
 pub use side::*;
 mod order_type;
 pub use order_type::*;
 mod book_params;
 pub use book_params::*;
+mod fee;
+pub use fee::*;
+mod total;
+pub use total::*;

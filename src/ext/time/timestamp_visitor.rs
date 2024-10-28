@@ -1,5 +1,5 @@
 use serde::de::{Error, Visitor};
-use serde::Deserializer;
+use serde::{Deserializer, Serialize, Serializer};
 use std::fmt;
 use time::OffsetDateTime;
 
@@ -19,6 +19,11 @@ impl Visitor<'_> for TimestampVisitor {
 }
 
 impl TimestampVisitor {
+    pub fn serialize<S: Serializer>(datetime: &OffsetDateTime, serializer: S) -> Result<S::Ok, S::Error> {
+        let timestamp = datetime.unix_timestamp_nanos() / 1_000_000;
+        timestamp.to_string().serialize(serializer)
+    }
+
     pub fn deserialize<'de, D>(deserializer: D) -> Result<OffsetDateTime, D::Error>
     where
         D: Deserializer<'de>,

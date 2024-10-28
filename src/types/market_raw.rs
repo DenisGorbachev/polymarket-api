@@ -1,8 +1,8 @@
-use crate::{Amount, ConditionId, DeserializeOrNone, DurationInSecondsVisitor, QuestionId, RewardsRaw, StringRfc3339, Tokens};
+use crate::{Amount, ConditionId, DeserializeOrNone, DurationInSecondsVisitor, QuestionId, RewardsRaw, Tokens};
 use alloy::primitives::Address;
 use derive_more::{From, Into};
 use serde::{Deserialize, Serialize};
-use time::Duration;
+use time::{Duration, OffsetDateTime};
 
 #[derive(From, Into, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -22,13 +22,14 @@ pub struct MarketRaw {
     pub archived: bool,
     pub enable_order_book: bool,
     pub accepting_orders: bool,
-    pub accepting_order_timestamp: Option<StringRfc3339>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub accepting_order_timestamp: Option<OffsetDateTime>,
     pub minimum_order_size: Amount,
     pub minimum_tick_size: Amount,
-    // #[serde(deserialize_with = "Rfc3339Visitor::deserialize")]
-    pub end_date_iso: Option<StringRfc3339>,
-    // #[serde(deserialize_with = "Rfc3339Visitor::deserialize")]
-    pub game_start_time: Option<StringRfc3339>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub end_date_iso: Option<OffsetDateTime>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub game_start_time: Option<OffsetDateTime>,
     #[serde(deserialize_with = "DurationInSecondsVisitor::deserialize")]
     pub seconds_delay: Duration,
     #[serde(deserialize_with = "DeserializeOrNone::run")]
