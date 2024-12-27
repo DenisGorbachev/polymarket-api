@@ -3,9 +3,9 @@ use derive_more::{From, Into};
 use indexmap::IndexMap;
 use rustc_hash::FxBuildHasher;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use subtype::newtype;
+use subtype::subtype;
 
-newtype!(
+subtype!(
     #[derive(PartialEq, Eq, Clone, Debug)]
     pub struct Book(IndexMap<Price, Amount, FxBuildHasher>)
 );
