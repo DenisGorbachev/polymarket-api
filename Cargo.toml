@@ -6,7 +6,6 @@ description = "Polymarket API client"
 license = "Apache-2.0 OR MIT"
 homepage = "https://github.com/DenisGorbachev/polymarket-api"
 repository = "https://github.com/DenisGorbachev/polymarket-api"
-readme = "README.md"
 keywords = ["polymarket", "api"]
 categories = ["api-bindings"]
 
