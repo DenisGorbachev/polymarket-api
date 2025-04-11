@@ -2,6 +2,14 @@ assert_lefthook_installed: true
 pre-commit:
   parallel: true
   commands:
+    gen:readme:
+      run: |
+        set -eu
+        mise run gen:readme
+        # run remark again because README.md has changed
+        mise run remark README.md
+        # add README.md manually instead of using `stage_fixed` because it may not have been staged
+        git add README.md
     fmt:
       run: mise run fmt
       stage_fixed: true

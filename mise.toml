@@ -17,7 +17,6 @@ cargo-binstall = "1.10.15"
 "cargo:cargo-hack" = "0.6.33"
 "cargo:cargo-machete" = "0.7.0"
 "cargo:cargo-nextest" = "0.9.72"
-"aqua:sclevine/yj" = "5.1.0"
 
 [tasks."build"]
 run = "cargo build"
@@ -26,7 +25,7 @@ run = "cargo build"
 run = "cargo fmt --all"
 
 [tasks."lint"]
-depends = ["lint:code", "lint:docs"]
+depends = ["lint:code", "lint:docs", "lint:deps"]
 
 [tasks."test"]
 depends = ["test:code", "test:docs"]
@@ -41,13 +40,26 @@ run = "mise run remark ."
 run = "cargo machete --with-metadata"
 
 [tasks."test:code"]
-run = "cargo nextest run"
+run = "cargo nextest run --all-features"
 
 [tasks."test:docs"]
 run = "cargo test --doc"
 
 [tasks."sort:deps"]
 run = "cargo sort"
+
+[tasks."check"]
+run = "cargo check --all-targets --all-features"
+
+[tasks."fix"]
+depends = ["fix:code", "fix:docs"]
+
+[tasks."fix:code"]
+env = { __CARGO_FIX_YOLO = 'yeah' }
+run = "cargo clippy --fix --allow-dirty --allow-staged"
+
+[tasks."fix:deps"]
+run = "cargo machete --with-metadata --fix"
 
 [tasks."watch"]
 run = """
@@ -59,16 +71,8 @@ CMD_NO_WHITESPACE="$(echo -e "${CMD_RAW}" | sed -e 's/^[[:space:]]*//' -e 's/[[:
 cargo watch --clear --watch "$PWD" --exec "$CMD_NO_WHITESPACE" "$@"
 """
 
-[tasks."check"]
-run = "cargo check --all-targets"
-
-[tasks."fix"]
-run = "cargo fix --workspace --allow-dirty --allow-staged"
-
 [tasks."gen:readme"]
-run = "./README.ts > README.md"
-sources = ["README.ts"]
-outputs = ["README.md"]
+run = "./README.ts --output README.md"
 
 [tasks."remark"]
 run = """
@@ -76,5 +80,5 @@ run = """
 set -euo pipefail
 REMARK_VALIDATE_LINKS="$(mise where npm:remark-validate-links)/lib/node_modules/remark-validate-links/index.js"
 REMARK_LINT_NO_DEAD_URLS="$(mise where npm:remark-lint-no-dead-urls)/lib/node_modules/remark-lint-no-dead-urls/index.js"
-remark --ignore-path .gitignore --quiet --frail --no-stdout --use "$REMARK_VALIDATE_LINKS" --use "$REMARK_LINT_NO_DEAD_URLS" "$@"
+remark --ignore-path .gitignore --ignore-pattern CHANGELOG.md --quiet --frail --no-stdout --use "$REMARK_VALIDATE_LINKS" --use "$REMARK_LINT_NO_DEAD_URLS" "$@"
 """
