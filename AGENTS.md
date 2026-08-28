@@ -107,12 +107,12 @@ Notes:
 #### Messages from agent to user
 
 - Use `~` in paths
-- Give each independently addressable item in a multi-item message a unique [chat thread ID](#chat-thread-id)
+- Format your message as a sequence of independently addressable items where each item begins with a [chat thread id heading](#chat-thread-id-heading)
+- Don't mention successful verifications and checks unless asked explicitly.
 
 #### Commands
 
 - Use `fd` and `rg` instead of `find` and `grep`
-- Use `cargo add` to add dependencies at their latest versions
 - Set the command-execution tool call’s timeout parameter and `yield_time_ms` to at least 300000 ms for the following commands: `mise run agent:on:stop`, `cargo build`, `git commit`
 
 #### Recommended crates
@@ -133,7 +133,7 @@ Notes:
 - When creating a new module, attach it with a `mod` declaration followed by `pub use` glob declaration. The parent module must re-export all items from the child modules. This allows to `use` the items right from the crate root, without intermediate module path. For example:
   ```rust
   fn foo() {}
-  
+
   mod my_module_name;
   pub use my_module_name::*;
   ```
@@ -147,7 +147,7 @@ Notes:
     ```rust
     use clap::ValueEnum;
     use serde::{Deserialize, Serialize};
-  
+
     #[derive(ValueEnum, Serialize, Deserialize, Eq, PartialEq, Hash, Clone, Copy, Debug)]
     pub enum Side {
         Buy,
@@ -243,7 +243,7 @@ Notes:
               .filter(|i| i.is_empty().not())
               .collect::<Vec<_>>()
       }
-      
+
       /// This is bad because it is not general enough and also forces the caller to collect the strings into a vec for input, which is bad for performance
       pub fn bar(inputs: Vec<String>) -> Vec<String> {}
       ```
@@ -263,7 +263,7 @@ Notes:
         let iter = inputs.into_iter().map(|s| s.as_ref().trim().parse::<u64>());
         Ok(handle_iter!(iter, InvalidInput))
     }
-    
+
     #[derive(Error, Debug)]
     pub enum ParseNumbersError {
         #[error("failed to parse {len} numbers", len = source.len())]
@@ -273,7 +273,7 @@ Notes:
   - Bad:
     ```rust
     use core::num::ParseIntError;
-    
+
     // Bad: manual loop + mutable accumulator
     pub fn parse_numbers(inputs: impl IntoIterator<Item = impl AsRef<str>>) -> Result<Vec<u64>, ParseIntError> {
         let mut out = Vec::new();
@@ -329,7 +329,7 @@ Notes:
         let input = input.as_mut();
         // do something
     }
-    
+
     pub fn baz(input: &impl AsRef<str>) {
         let input = input.as_ref();
         // do something
@@ -339,7 +339,7 @@ Notes:
     ```rust
     /// This is bad because the callsite may have to call .as_mut() when passing the input argument
     pub fn bar(input: &mut String) {}
-    
+
     /// This is bad because the callsite may have to call .as_ref() when passing the input argument
     pub fn baz(input: &str) {}
     ```
@@ -348,7 +348,7 @@ Notes:
     ```rust
     use core::str::FromStr;
     use core::num::ParseIntError;
-    
+
     impl FromStr for UserId {
         type Err = ParseIntError;
 
@@ -361,10 +361,10 @@ Notes:
   ```rust
   use core::str::FromStr;
   use core::num::ParseIntError;
-  
+
   impl FromStr for UserId {
       type Err = ParseIntError;
-  
+
       fn from_str(s: &str) -> Result<Self, Self::Err> {
           // This is bad because it uses more code to express the same idea
           match s.parse::<u64>() {
@@ -378,7 +378,7 @@ Notes:
   - Good:
   ```rust
   use core::time::Duration;
-  
+
   impl From<Duration> for UnixTimestamp {
       #[inline]
       fn from(duration: Duration) -> Self {
@@ -389,7 +389,7 @@ Notes:
   - Bad:
   ```rust
   use core::time::Duration;
-  
+
   impl From<Duration> for UnixTimestamp {
       #[inline]
       fn from(duration: Duration) -> Self {
@@ -427,13 +427,11 @@ Notes:
 
 #### Arithmetics
 
-- Never use the following operators: `+, +=, -, -=, *, *=, /, /=, %, %=, -, <<, <<=, >>, >>=`
-- Never use the following traits: `core::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg, Shl, ShlAssign, Shr, ShrAssign}`
+- Don't use the impls of traits `core::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg, Shl, ShlAssign, Shr, ShrAssign}` or their operators unless they don't panic or silently overflow
+- Write and use arithmetic trait impls that don't panic or silently overflow
 - Prefer `checked` versions of arithmetic operations
 - Every call to an `overflowing`, `saturating`, `wrapping` version must have a single-line comment above it that starts with "SAFETY: " and describes why calling this version is safe in this specific case
 - Use `num` crate items if necessary (for example, to implement a function that calls arithmetic methods on a generic type)
-
-Note: the arithmetic operators and traits are banned because they may panic or silently overflow.
 
 #### Index access
 
@@ -477,6 +475,8 @@ A function marked with `#[test]` or `#[tokio::test]`.
 #### Cargo.toml
 
 - Don't define package features with only a single optional dependency (such features are already defined by cargo automatically)
+- Use `cargo add` to add dependencies
+- If the package is [publishable](#publishable-package): use `cargo add {dependency}@{version}` to add a version whose patch component equals 0, then use `cargo update -p {dependency} --precise {version}` to lock that exact version
 
 #### Code style
 
@@ -518,9 +518,16 @@ Notes:
 
 * It is recommended to use `serde_with` to reduce the code size by avoiding custom `Serialize`/`Deserialize` impls
 
+#### Publishable package
+
+A package that has a remote whose name contains `public` or `pre-public` and ends with `template`.
+
 ### Guidelines for `subtype`
 
-- The macro calls that begin with `subtype` (for example, `subtype!` and `subtype_string!`) expand to newtypes.
+- Define newtypes as ordinary structs with explicit `From` / `TryFrom` impls.
+- The macro calls that begin with `subtype` (for example, `subtype!` and `subtype_string!`) are legacy APIs that expand to newtypes.
+  - Don't use them in new code because their checker and preprocessor concepts have been superseded by explicit conversion impls.
+- Use the `SerializeTransparent` derive for a refined newtype that must serialize identically to its inner field while using Serde's `try_from` container attribute for validated deserialization.
 
 ### Guidelines for `clap`
 
@@ -926,7 +933,7 @@ Read the extra docs from the dirs below if they are relevant to your current tas
 
 ### Error handling
 
-#### Princicle
+#### Principle
 
 Every fallible function must return an error with enough data for the caller to retry the call.
 
@@ -1239,6 +1246,7 @@ pub enum WriteToNamedTempFileError {
 
 ````rust
 use crate::{ErrorDisplayer, WriteToNamedTempFileError, map_err, write_to_named_temp_file};
+use alloc::format;
 use core::error::Error;
 use core::fmt::Formatter;
 use std::io;
@@ -1324,7 +1332,10 @@ mod tests {
     use I18nUpdateRunError::*;
     use JsonValueNewError::*;
     use UpdateRowError::*;
+    use alloc::string::{String, ToString};
+    use alloc::vec;
     use pretty_assertions::assert_eq;
+    use std::eprintln;
     use std::error::Error;
     use thiserror::Error;
 
@@ -1387,7 +1398,7 @@ mod tests {
         let mut actual = String::new();
         let displayer = ErrorDisplayer(error);
         writeln!(actual, "{displayer}").unwrap();
-        eprintln!("{}", actual);
+        eprintln!("{actual}");
         assert_eq!(actual, expected)
     }
 
@@ -1513,6 +1524,8 @@ impl<T: Debug> From<T> for DisplayAsDebug<T> {
 
 ````rust
 use crate::ErrorDisplayer;
+use alloc::format;
+use alloc::vec::Vec;
 use core::error::Error;
 use core::fmt::{Debug, Write};
 use core::fmt::{Display, Formatter};
@@ -1755,6 +1768,8 @@ cfg_if::cfg_if! {
 
 extern crate alloc;
 extern crate core;
+#[cfg(feature = "std")]
+extern crate std;
 
 mod macros;
 
@@ -1976,10 +1991,14 @@ macro_rules! _index_err_async {
 mod tests {
     use crate::macros::tests::DbValidateError::UserNotFound;
     use crate::{ErrVec, ItemError, PathBufDisplay};
+    use alloc::boxed::Box;
+    use alloc::string::String;
+    use alloc::vec::Vec;
     use futures::future::join_all;
     use serde::{Deserialize, Serialize};
     use std::io;
     use std::path::{Path, PathBuf};
+    use std::println;
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
     use thiserror::Error;
@@ -2327,6 +2346,14 @@ cfg_if::cfg_if! {
     }
 }
 ````
+
+### Project info
+
+#### `git remote`
+
+```shell
+origin
+```
 
 ### Project files
 

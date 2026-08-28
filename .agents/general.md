@@ -103,12 +103,12 @@ Notes:
 ## Messages from agent to user
 
 - Use `~` in paths
-- Give each independently addressable item in a multi-item message a unique [chat thread ID](#chat-thread-id)
+- Format your message as a sequence of independently addressable items where each item begins with a [chat thread id heading](#chat-thread-id-heading)
+- Don't mention successful verifications and checks unless asked explicitly.
 
 ## Commands
 
 - Use `fd` and `rg` instead of `find` and `grep`
-- Use `cargo add` to add dependencies at their latest versions
 - Set the command-execution tool call’s timeout parameter and `yield_time_ms` to at least 300000 ms for the following commands: `mise run agent:on:stop`, `cargo build`, `git commit`
 
 ## Recommended crates
@@ -129,7 +129,7 @@ Notes:
 - When creating a new module, attach it with a `mod` declaration followed by `pub use` glob declaration. The parent module must re-export all items from the child modules. This allows to `use` the items right from the crate root, without intermediate module path. For example:
   ```rust
   fn foo() {}
-  
+
   mod my_module_name;
   pub use my_module_name::*;
   ```
@@ -143,7 +143,7 @@ Notes:
     ```rust
     use clap::ValueEnum;
     use serde::{Deserialize, Serialize};
-  
+
     #[derive(ValueEnum, Serialize, Deserialize, Eq, PartialEq, Hash, Clone, Copy, Debug)]
     pub enum Side {
         Buy,
@@ -239,7 +239,7 @@ Notes:
               .filter(|i| i.is_empty().not())
               .collect::<Vec<_>>()
       }
-      
+
       /// This is bad because it is not general enough and also forces the caller to collect the strings into a vec for input, which is bad for performance
       pub fn bar(inputs: Vec<String>) -> Vec<String> {}
       ```
@@ -259,7 +259,7 @@ Notes:
         let iter = inputs.into_iter().map(|s| s.as_ref().trim().parse::<u64>());
         Ok(handle_iter!(iter, InvalidInput))
     }
-    
+
     #[derive(Error, Debug)]
     pub enum ParseNumbersError {
         #[error("failed to parse {len} numbers", len = source.len())]
@@ -269,7 +269,7 @@ Notes:
   - Bad:
     ```rust
     use core::num::ParseIntError;
-    
+
     // Bad: manual loop + mutable accumulator
     pub fn parse_numbers(inputs: impl IntoIterator<Item = impl AsRef<str>>) -> Result<Vec<u64>, ParseIntError> {
         let mut out = Vec::new();
@@ -325,7 +325,7 @@ Notes:
         let input = input.as_mut();
         // do something
     }
-    
+
     pub fn baz(input: &impl AsRef<str>) {
         let input = input.as_ref();
         // do something
@@ -335,7 +335,7 @@ Notes:
     ```rust
     /// This is bad because the callsite may have to call .as_mut() when passing the input argument
     pub fn bar(input: &mut String) {}
-    
+
     /// This is bad because the callsite may have to call .as_ref() when passing the input argument
     pub fn baz(input: &str) {}
     ```
@@ -344,7 +344,7 @@ Notes:
     ```rust
     use core::str::FromStr;
     use core::num::ParseIntError;
-    
+
     impl FromStr for UserId {
         type Err = ParseIntError;
 
@@ -357,10 +357,10 @@ Notes:
   ```rust
   use core::str::FromStr;
   use core::num::ParseIntError;
-  
+
   impl FromStr for UserId {
       type Err = ParseIntError;
-  
+
       fn from_str(s: &str) -> Result<Self, Self::Err> {
           // This is bad because it uses more code to express the same idea
           match s.parse::<u64>() {
@@ -374,7 +374,7 @@ Notes:
   - Good:
   ```rust
   use core::time::Duration;
-  
+
   impl From<Duration> for UnixTimestamp {
       #[inline]
       fn from(duration: Duration) -> Self {
@@ -385,7 +385,7 @@ Notes:
   - Bad:
   ```rust
   use core::time::Duration;
-  
+
   impl From<Duration> for UnixTimestamp {
       #[inline]
       fn from(duration: Duration) -> Self {
@@ -423,13 +423,11 @@ Notes:
 
 ## Arithmetics
 
-- Never use the following operators: `+, +=, -, -=, *, *=, /, /=, %, %=, -, <<, <<=, >>, >>=`
-- Never use the following traits: `core::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg, Shl, ShlAssign, Shr, ShrAssign}`
+- Don't use the impls of traits `core::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg, Shl, ShlAssign, Shr, ShrAssign}` or their operators unless they don't panic or silently overflow
+- Write and use arithmetic trait impls that don't panic or silently overflow
 - Prefer `checked` versions of arithmetic operations
 - Every call to an `overflowing`, `saturating`, `wrapping` version must have a single-line comment above it that starts with "SAFETY: " and describes why calling this version is safe in this specific case
 - Use `num` crate items if necessary (for example, to implement a function that calls arithmetic methods on a generic type)
-
-Note: the arithmetic operators and traits are banned because they may panic or silently overflow.
 
 ## Index access
 
@@ -473,6 +471,8 @@ A function marked with `#[test]` or `#[tokio::test]`.
 ## Cargo.toml
 
 - Don't define package features with only a single optional dependency (such features are already defined by cargo automatically)
+- Use `cargo add` to add dependencies
+- If the package is [publishable](#publishable-package): use `cargo add {dependency}@{version}` to add a version whose patch component equals 0, then use `cargo update -p {dependency} --precise {version}` to lock that exact version
 
 ## Code style
 
@@ -494,6 +494,16 @@ Notes:
 
 - Should match the thread topic
 
+## Chat thread id heading
+
+A Markdown heading level 3 that contains only [chat thread id](#chat-thread-id).
+
+Examples:
+
+- `### RVC`
+- `### AKE`
+- `### LMY`
+
 ## findings.md
 
 - If it exists:
@@ -512,3 +522,7 @@ Notes:
     - If there is at least one proposed fix:
       - Then: "\n\n" and a Markdown nested list of fixes where each fix must have a format `{number}. {description}` (the numbers should start from 1 for each list of fixes)
       - Else: the exact text "none."
+
+## Publishable package
+
+A package that has a remote whose name contains `public` or `pre-public` and ends with `template`.
