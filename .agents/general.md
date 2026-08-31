@@ -74,7 +74,7 @@ Notes:
     - A task to write `impl From<Foo> for Bar` where `Foo` can't actually be infallibly converted to `Bar` (would require calling `unwrap`, which is bad) - in this case you should write `impl TryFrom<Foo> for Bar` and reply with "Foo can't be infallibly converted to Bar, so I implemented a fallible conversion instead".
     - A task to write a trait impl that only returns an error - in this case you should not write the trait impl but reply with "trait X can't be implemented for Foo because ..."
 - If a sentence starts with "Idea: ":
-  - Evaluate it thorougly.
+  - Evaluate it thoroughly.
   - If you agree:
     - Then: implement it.
     - Else: explain why you didn't implement it and brainstorm solutions.
@@ -421,7 +421,7 @@ Notes:
 
 - When writing code related to enums, bring the variants in scope with `use Enum::*;` statement at the top of the file or function (prefer "at the top of the file" for data enums, prefer "at the top of the function" for error enums).
 
-## Arithmetics
+## Arithmetic
 
 - Don't use the impls of traits `core::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg, Shl, ShlAssign, Shr, ShrAssign}` or their operators unless they don't panic or silently overflow
 - Write and use arithmetic trait impls that don't panic or silently overflow
