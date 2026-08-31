@@ -477,6 +477,7 @@ A function marked with `#[test]` or `#[tokio::test]`.
 - Don't define package features with only a single optional dependency (such features are already defined by cargo automatically)
 - Use `cargo add` to add dependencies
 - If the package is [publishable](#publishable-package): use `cargo add {dependency}@{version}` to add a version whose patch component equals 0, then use `cargo update -p {dependency} --precise {version}` to lock that exact version
+- When adding a new workspace member: add it to `packages` dir unless specified otherwise
 
 #### Code style
 
