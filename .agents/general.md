@@ -480,6 +480,10 @@ A function marked with `#[test]` or `#[tokio::test]`.
       - Run `cargo update -p {dependency} --precise {version}` to lock that exact version
     - Else:
       - Run `cargo add {dependency}` without `{version}`
+- When adding a dependency in a workspace:
+  - Add it to top-level manifest first (`workspace.dependencies`)
+- When adding a dependency for a workspace member:
+  - Run `cargo add {dependency}` without `{version}` (cargo will set `workspace = true`)
 - When adding a new workspace member: add it to `packages` dir unless specified otherwise
 
 ## Code style
