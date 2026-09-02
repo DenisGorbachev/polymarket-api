@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --node-modules-dir=false --allow-read --allow-write --allow-run --allow-env=HOME --no-lock
 
-import {CargoMetadataSchema, PackageMetadataSchema, selectWorkspacePackages} from "./CargoMetadata.ts"
 import type {CargoMetadata, CargoPackage} from "./CargoMetadata.ts"
+import {CargoMetadataSchema, PackageMetadataSchema, selectWorkspacePackages} from "./CargoMetadata.ts"
 import {compare, parse} from "jsr:@std/semver@1.0.0"
 import {stringify} from "jsr:@libs/xml@7.0.3"
 import remarkParse from "npm:remark-parse@11.0.0"
@@ -54,7 +54,6 @@ const fileExists = async (path: string) => {
   }
 }
 
-/// PRUNING: Replaces Markdown heading syntax so included headings are nested under their generated section heading.
 const shiftHeadings = (markdown: string, headingLevel: number) => {
   const edits: { start: number; end: number; replacement: string }[] = []
   visit(unified().use(remarkParse).parse(markdown), "heading", (heading) => {
@@ -279,7 +278,6 @@ const parts = (await Promise.all([
 
 const content = parts.join("\n\n")
 
-/// PRUNING: Removes only an uncommitted temporary AGENTS render after replacement or failure because it contains no user-owned data.
 const removeTemporaryAgents = async (path: string) => {
   try {
     await Deno.remove(path)

@@ -10,7 +10,6 @@ git_output_file=$(mktemp "$git_output_template")
 # Invoked indirectly by the EXIT trap.
 # shellcheck disable=SC2329
 cleanup() {
-  # PRUNING: Remove only the temporary Git output file created by this validation run.
   rm -f -- "$git_output_file"
 }
 trap cleanup EXIT

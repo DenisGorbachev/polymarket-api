@@ -26,10 +26,8 @@ rollback_transaction() {
         mv "$source" "$destination"
       fi
     done <"$backup_root/directory-rollbacks"
-    # PRUNING: Restore the archived originals, dropping only changes made by this failed rename transaction.
     [[ ! -f $backup_root/files.tar ]] || tar -xPf "$backup_root/files.tar"
   fi
-  # PRUNING: Delete only temporary transaction backups after success or rollback because the originals have been committed or restored.
   rm -rf "$backup_root"
   exit "$status"
 }

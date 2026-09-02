@@ -31,6 +31,5 @@ write_hook "$hooks_dir/commit-msg" 'exec mise run commit-msg -- "$@"'
 
 post_commit_hook="$hooks_dir/post-commit"
 if [[ -f $post_commit_hook && $(<"$post_commit_hook") == $'#!/bin/sh\nexec mise run post-commit -- "$@"' ]]; then
-  # PRUNING: Remove only the obsolete repository-generated hook because commit validation no longer mutates the index.
   rm -f -- "$post_commit_hook"
 fi
