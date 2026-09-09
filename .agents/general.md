@@ -94,8 +94,8 @@ Write code that minimizes losses:
 
 ## Messages from agent to user
 
-- Use `~` in paths
-- Format your message as a sequence of independently addressable items where each item begins with a [chat thread id heading](#chat-thread-id-heading)
+- Use `~` in paths.
+- Format your message as a sequence of independently addressable items.
 - Don't mention successful verifications and checks unless asked explicitly.
 
 ## Commands

@@ -96,8 +96,8 @@ Write code that minimizes losses:
 
 #### Messages from agent to user
 
-- Use `~` in paths
-- Format your message as a sequence of independently addressable items where each item begins with a [chat thread id heading](#chat-thread-id-heading)
+- Use `~` in paths.
+- Format your message as a sequence of independently addressable items.
 - Don't mention successful verifications and checks unless asked explicitly.
 
 #### Commands
@@ -997,7 +997,6 @@ task.output = "keep-order"
 node = "24.15.0"
 deno = "1.46.1"
 fnox = "1.33.1"
-cargo-binstall = "1.10.15"
 "npm:@commitlint/config-conventional" = "19.6.0"
 "npm:@commitlint/cli" = "19.6.0"
 "npm:@commitlint/types" = "19.5.0"
